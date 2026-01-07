@@ -1,0 +1,69 @@
+﻿@model IndexViewModel
+
+@section styles{
+	<link href="~/css/index.css" rel="stylesheet">
+}
+
+@section scripts{
+	<script src="~/js/index.js"></script>
+}
+
+
+<div id="stats" class="card">
+	<h5>Ты добываешь <span id="profitPerClick">@Model.UserInfo.ProfitPerClick</span> золота с одного удара</h5>
+	<h5>Твои крестьяне добывают <span id="profitPerSecond">@Model.UserInfo.ProfitPerSecond</span> золота в секунду</h5>
+</div>
+
+<div id="boosts" class="card">
+	<h3>Улучшения:</h3>
+	<div class="wrapper">
+		@foreach (var boost in Model.Boosts)
+		{
+			var userBoost = Model.UserInfo.UserBoosts.FirstOrDefault(ub => ub.BoostId == boost.Id);
+			var imgSrc = $"data:image/png;base64,{Convert.ToBase64String(boost.Image)}";
+
+			<div data-boost-id="@boost.Id" class="boost-item">
+				<img src="@imgSrc" />
+				<button class="buy-boost-button">
+					Купить
+				</button>
+				<h6>@boost.Title</h6>
+				<h6>
+					Стоит
+					<span data-boost-price>
+						@(userBoost != null
+											? userBoost.CurrentPrice
+											: boost.Price)
+					</span>
+					Золота
+				</h6>
+				<h6>
+					Куплено
+					<span data-boost-quantity>
+						@(userBoost != null
+											? userBoost.Quantity
+											: 0)
+					</span>
+					Штук
+				</h6>
+				<h6>
+					Дает 
+					<span>@boost.Profit</span>
+					Золота
+					<span>@(boost.IsAuto ? "в секунду" : "за клик")</span>
+				</h6>
+			</div>
+		}
+	</div>
+</div>
+
+<div id="greeting" class="d-flex d-column align-items-center card">
+	<h2>Приветствуем тебя, @Model.UserInfo.UserName</h2>
+	<h4>У тебя есть <span id="currentScore">@Model.UserInfo.CurrentScore</span> золота</h4>
+	<h4>Всего ты добыл <span id="recordScore">@Model.UserInfo.RecordScore</span> золота</h4>
+</div>
+
+<div class="d-flex justify-content-center align-items-center vh-100">
+	<button id="click-item">
+	</button>
+</div>

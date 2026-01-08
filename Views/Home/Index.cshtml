@@ -8,6 +8,8 @@
 	<script src="~/js/index.js"></script>
 }
 
+@Html.AntiForgeryToken()
+
 
 <div id="stats" class="card">
 	<h5>Ты добываешь <span id="profitPerClick">@Model.UserInfo.ProfitPerClick</span> золота с одного удара</h5>
@@ -66,4 +68,94 @@
 <div class="d-flex justify-content-center align-items-center vh-100">
 	<button id="click-item">
 	</button>
+</div>
+
+<!--обмен бустов тут-->
+<div id="exchange" class="card" style="margin-top: 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+    <h3>🔄 Обмен бустов</h3>
+
+    <div class="exchange-controls" style="display: flex; flex-wrap: wrap; gap: 15px; margin: 15px 0;">
+        <div class="exchange-section" style="flex: 1; min-width: 300px;">
+            <h5>Обменять 5 → 1 (на следующий)</h5>
+            <div class="form-group">
+                <label>Отдаю 5 бустов:</label>
+                <select id="exchangeFromBoost" class="form-control" style="margin-bottom: 10px;">
+                    <option value="">Выберите буст для обмена</option>
+                    @{
+                        var boosts = Model.Boosts.OrderBy(b => b.Id).ToList();
+                        for (int i = 0; i < boosts.Count - 1; i++)
+                        {
+                            var boost = boosts[i];
+                            var userBoost = Model.UserInfo.UserBoosts.FirstOrDefault(ub => ub.BoostId == boost.Id);
+                            var nextBoost = boosts[i + 1];
+                            var quantity = userBoost?.Quantity ?? 0;
+
+                            <option value="@boost.Id"
+                                    data-next-id="@nextBoost.Id"
+                                    data-next-name="@nextBoost.Title"
+                                    data-initial-quantity="@quantity">
+                                @boost.Title (есть @quantity)
+                            </option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Получу 1 буст:</label>
+                <div id="exchangeToInfo" style="padding: 10px; background: rgba(255,255,255,0.2); border-radius: 5px;">
+                    <span id="exchangeToName">-</span>
+                </div>
+            </div>
+
+            <button id="btnExchange" class="btn btn-warning" style="width: 100%;" disabled>
+                🔄 Обменять 5 → 1
+            </button>
+        </div>
+
+        <div class="exchange-section" style="flex: 1; min-width: 300px;">
+            <h5>Обменять 1 → 5 (на предыдущий)</h5>
+            <div class="form-group">
+                <label>Отдаю 1 буст:</label>
+                <select id="reverseFromBoost" class="form-control" style="margin-bottom: 10px;">
+                    <option value="">Выберите буст для обмена</option>
+                    @{
+                        for (int i = 1; i < boosts.Count; i++)
+                        {
+                            var boost = boosts[i];
+                            var userBoost = Model.UserInfo.UserBoosts.FirstOrDefault(ub => ub.BoostId == boost.Id);
+                            var prevBoost = boosts[i - 1];
+
+                            if (userBoost != null && userBoost.Quantity >= 1)
+                            {
+                                <option value="@boost.Id" data-prev-id="@prevBoost.Id" data-prev-name="@prevBoost.Title">
+                                    @boost.Title (есть @userBoost.Quantity)
+                                </option>
+                            }
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Получу 5 бустов:</label>
+                <div id="reverseToInfo" style="padding: 10px; background: rgba(255,255,255,0.2); border-radius: 5px;">
+                    <span id="reverseToName">-</span>
+                </div>
+            </div>
+
+            <button id="btnReverseExchange" class="btn btn-info" style="width: 100%;" disabled>
+                🔄 Обменять 1 → 5
+            </button>
+        </div>
+    </div>
+
+    <div class="exchange-info" style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 5px; margin-top: 15px;">
+        <p><strong>Как это работает:</strong></p>
+        <p>• Можно обменять 5 бустов одного типа на 1 следующий по ID (более дорогой)</p>
+        <p>• Или можно обменять 1 буст на 5 предыдущих по ID (более дешевых)</p>
+        <p>• Бусты отсортированы по ID от дешевых к дорогим</p>
+    </div>
+
+    <div id="exchangeMessage" style="min-height: 24px; margin-top: 10px; font-weight: bold;"></div>
 </div>

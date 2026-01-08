@@ -21,13 +21,13 @@ using (var scope = app.Services.CreateScope())
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseStaticFiles();
 app.MapControllers();
 app.MapDefaultControllerRoute();
 app.MapHub<ClickerHub>("/clickerHub");
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseStaticFiles();
+
 app.Run();
 
 void ConfigureServices(IServiceCollection services)
@@ -51,6 +51,16 @@ void ConfigureServices(IServiceCollection services)
     services.AddAutoMapper(typeof(Program).Assembly);
     services.AddMediatR(typeof(Program).Assembly);
     services.AddSwaggerGen();
+
+    //У меня вылазила ошибка при обмене, даже если обмен проходил
+    //Эта настройка нужна чтобы данные между cs и js кодом обменивались в стиле camelCase и код работал нормально
+    services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
+
     services.AddControllersWithViews();
     services.AddSignalR();
 }
